@@ -10,6 +10,7 @@ from lamp_common import *
 
 MQTT_CLIENT_ID = "voice"
 
+lampState = {}
 
 def audioToText():
     #time.sleep(1)
@@ -27,9 +28,20 @@ def audioToText():
         except:
             pass
 
+def receive_new_lamp_state(self, client, userdata, message):
+        lampState = json.loads(message.payload.decode('utf-8'))
+        return lampState
 
+def get_current_lamp_state():
+    c = MQTT.Client(client_id=MQTT_CLIENT_ID)
+    c.connect(MQTT_BROKER_HOST, port=MQTT_BROKER_PORT,
+                      keepalive=MQTT_BROKER_KEEP_ALIVE_SECS)
+    c.subscribe(TOPIC_LAMP_CHANGE_NOTIFICATION, qos=1)
+    c.message_callback_add(TOPIC_LAMP_CHANGE_NOTIFICATION,
+                                       self.receive_new_lamp_state)
 
 def parseText(text):
+    lampState = get_current_lamp_state()
     c = MQTT.Client(client_id=MQTT_CLIENT_ID)
     c.connect(MQTT_BROKER_HOST, port=MQTT_BROKER_PORT,
                       keepalive=MQTT_BROKER_KEEP_ALIVE_SECS)
@@ -37,21 +49,18 @@ def parseText(text):
     
     if "on" in text:
         print("ON IS FOUND")
-        msg = {'color': {'h': 1.0, 's': 1.0},
-               'brightness': 1.0,
-               'on': True,
-               'client': MQTT_CLIENT_ID}
-        c.publish(TOPIC_SET_LAMP_CONFIG, json.dumps(msg).encode('utf-8'), qos=1)
-        print("PUBLISHED")
+        lampState['on'] = True
 
     if "off" in text:
         print("OFF IS FOUND")
-        msg = {'color': {'h': 1.0, 's': 1.0},
-               'brightness': 1.0,
-               'on': False,
-               'client': MQTT_CLIENT_ID}
-        c.publish(TOPIC_SET_LAMP_CONFIG, json.dumps(msg).encode('utf-8'), qos=1)
-
+        lampState['on'] = False
+    
+ #   if "hue" in text:
+ #       print("HUE IS FOUND")
+ #       lampState['color']['h'] = 
+    
+    
+    c.publish(TOPIC_SET_LAMP_CONFIG, json.dumps(lampState).encode('utf-8'), qos=1)
     time.sleep(0.1)
     c.loop_stop()
 
