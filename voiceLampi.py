@@ -9,26 +9,8 @@ from lamp_common import *
 
 
 MQTT_CLIENT_ID = "voice"
-
-
 lampState = {}
 
-def audioToText():
-    #time.sleep(1)
-    filename = "out.wav"
-    r = sr.Recognizer()
-    # open the file
-    with sr.AudioFile(filename) as source:
-        # listen for the data (load audio to memory)
-        audio_data = r.record(source)
-        # recognize (convert from speech to text)
-        try:
-            text = r.recognize_google(audio_data)
-            print(text)
-            parseText(text)
-            #print(text)
-        except:
-            pass
 
 def receive_new_lamp_state(self, client, userdata, message):
         lampState = json.loads(message.payload.decode('utf-8'))
@@ -46,13 +28,14 @@ def get_current_lamp_state():
 
 def parseText(text):
     print("getting current state")
-  #  lampState = get_current_lamp_state()
+    lampState = get_current_lamp_state()
     c = MQTT.Client(client_id=MQTT_CLIENT_ID)
     c.connect(MQTT_BROKER_HOST, port=MQTT_BROKER_PORT,
                       keepalive=MQTT_BROKER_KEEP_ALIVE_SECS)
     c.loop_start()
+    print(lampState)
     
-    if "on" in text:
+    """ if "on" in text:
         print("ON IS FOUND")
         lampState['on'] = True
 
@@ -94,21 +77,26 @@ def parseText(text):
     c.publish(TOPIC_SET_LAMP_CONFIG, json.dumps(lampState).encode('utf-8'), qos=1)
     time.sleep(0.1)
     print("published")
-    c.loop_stop()
+    c.loop_stop() """
 
 #parseText("red")
+def recordCommand():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source)
+    
+    try: 
+        print("recognizing...")
+        query = r.recognize_google(audio, language ='en-in')
+        print(query)
+    except:
+        pass
+    
+    return query
 
-while(True):
-    #proc_args = ['arecord', '-D' , 'dmic_sv' , '-c2' , '-r' , '44100' , '-f' , 'S32_LE' , '-t' , 'wav' , '-V' , 'mono' , '-v' , 'subprocess1.wav']
-    proc_args = ['arecord', '-c1' , '--rate' , '44100' , '-f' , 'S16_LE' , '-t' , 'wav' , '-V' , '-v' , 'out.wav']
-    rec_proc = subprocess.Popen(proc_args, shell=False, preexec_fn=os.setsid)
-    print("startRecordingArecord()> rec_proc pid= " + str(rec_proc.pid))
-    #print("startRecordingArecord()> recording started")
-
-    time.sleep(5)
-    os.killpg(rec_proc.pid, signal.SIGTERM)
-    rec_proc.terminate()
-    rec_proc = None
-    #print("stopRecordingArecord()> Recording stopped")
-    audioToText()
+while True:
+    command = recordCommand().lower()
+    parseText(command)
 
