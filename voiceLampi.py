@@ -6,6 +6,7 @@ import signal
 import speech_recognition as sr
 import paho.mqtt.client as MQTT
 from lamp_common import *
+from settings import *
 
 
 MQTT_CLIENT_ID = "voice"
@@ -82,21 +83,24 @@ def parseText(text):
 #parseText("red")
 def recordCommand():
     r = sr.Recognizer()
-    with sr.Microphone() as source:
+    with sr.Microphone(device_index = MIC_INDEX) as source:
+        r.adjust_for_ambient_noise(source)
         print("listening...")
-        r.pause_threshold = 1
+        r.pause_threshold = .5
         audio = r.listen(source)
     
-    try: 
+    try:
         print("recognizing...")
-        query = r.recognize_google(audio, language ='en-in')
+        query = r.recognize_google(audio)
+
+        # setting language makes it slower but more accurate
+        # query = r.recognize_google(audio, language = 'en-US')
         print(query)
     except:
-        pass
-    
+        query = "failed"
     return query
 
 while True:
-    command = recordCommand().lower()
-    parseText(command)
+    command = recordCommand()
+    #parseText(command)
 
