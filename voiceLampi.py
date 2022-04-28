@@ -13,6 +13,7 @@ from paho.mqtt.client import Client
 MIC_INDEX = 2
 MQTT_CLIENT_ID = "voice"
 
+
 class LampiVoice(object):
     def __init__(self):
         self.received_lamp_state = {}
@@ -41,9 +42,8 @@ class LampiVoice(object):
         raise Exception("Timeout waiting for lamp state")
 
     def return_lamp_state(self):
-        print("here")
         return self.received_lamp_state
-        
+
 
 def parseText(text):
     voice = LampiVoice()
@@ -52,7 +52,7 @@ def parseText(text):
     if "lamp" in text:
         c = MQTT.Client(client_id=MQTT_CLIENT_ID)
         c.connect(MQTT_BROKER_HOST, port=MQTT_BROKER_PORT,
-                keepalive=MQTT_BROKER_KEEP_ALIVE_SECS)
+                  keepalive=MQTT_BROKER_KEEP_ALIVE_SECS)
         c.loop_start()
 
         if "on" in text:
@@ -66,11 +66,10 @@ def parseText(text):
         lampState['client'] = MQTT_CLIENT_ID
         print(lampState)
         c.publish(TOPIC_SET_LAMP_CONFIG,
-                json.dumps(lampState).encode('utf-8'),
-                qos=1)
+                  json.dumps(lampState).encode('utf-8'),
+                  qos=1)
         print("published")
         c.loop_stop()
-    
 
 
 def recordCommand():
@@ -88,11 +87,9 @@ def recordCommand():
         # setting language makes it slower but more accurate
         # query = r.recognize_google(audio, language = 'en-US')
         parseText(query.split())
-    except:
+    except sr.UnknownValueError:
         query = "failed"
     print(query)
-
-
 
 
 while True:
