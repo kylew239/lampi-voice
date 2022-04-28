@@ -1,0 +1,11 @@
+command, hue, saturation
+red, 1.0, 1.0
+blue, 0.6, 1.0
+green, 0.35, 1.0
+yellow, 0.2, 1.0
+purple, 0.83, 1.0
+violet, 0.75, 1.0
+orange, 0.2, 1.0
+cyan, 0.5, 1.0
+peach, 0.108, 0.5
+pink, 0.97, 1.0
