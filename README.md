@@ -4,6 +4,7 @@ sudo pip3 install SpeechRecognition
 sudo apt-get install portaudio19-dev python-all-dev python3-all-dev && sudo 
 pip3 install pyaudio
 sudo apt-get install flac
+sudo ln -s /home/pi/lampi-voice/lamp_voice.conf /etc/supervisor/conf.d/lamp_voice.conf
 ```
 
 
