@@ -11,7 +11,7 @@ from time import sleep
 from paho.mqtt.client import Client
 import csv
 import random
-#from word2number import w2n
+
 
 MIC_INDEX = 2
 MQTT_CLIENT_ID = "voice"
@@ -60,21 +60,19 @@ def parseText(text):
         c.loop_start()
 
         lampIndex = text.index("lamp")
-        print(lampIndex)
-        print(text)
-        print(len(text))
 
         if lampIndex != (len(text) - 1):
             with open('commands.txt') as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=',')
                 for row in csv_reader:
                     if row[0] in text:
-                        lampState['color'] = {'h': float(row[1]), 's': float(row[2])}
+                        lampState['color'] = {'h': float(row[1]),
+                                              's': float(row[2])}
                         lampState['on'] = True
 
             if "hue" in text:
                 hueIndex = text.index("hue")
-                if hueIndex != (len(text) -1):
+                if hueIndex != (len(text) - 1):
                     if text[hueIndex + 1] == "up" or text[hueIndex + 1] == "increase":
                         lampState['color']['h'] = hsvInc(lampState['color']['h'])
                     if text[hueIndex + 1] == "down" or text[hueIndex + 1] == "decrease":
@@ -86,11 +84,11 @@ def parseText(text):
                     if text[hueIndex + 1] == "min":
                         lampState['color']['h'] = 0.0
                     if text[hueIndex + 1] == "random":
-                        lampState['color']['h'] = float(random.uniform(0,1))
+                        lampState['color']['h'] = float(random.uniform(0, 1))
 
             if "saturation" in text:
                 satIndex = text.index("saturation")
-                if satIndex != (len(text) -1):
+                if satIndex != (len(text) - 1):
                     if text[satIndex + 1] == "up" or text[satIndex + 1] == "increase":
                         lampState['color']['s'] = hsvInc(lampState['color']['s'])
                     if text[satIndex + 1] == "down" or text[satIndex + 1] == "decrease":
@@ -102,11 +100,11 @@ def parseText(text):
                     if text[satIndex + 1] == "random":
                         lampState['color']['s'] = 0.0
                     if text[satIndex + 1] == "random":
-                        lampState['color']['s'] = float(random.uniform(0,1))
+                        lampState['color']['s'] = float(random.uniform(0, 1))
 
             if "brightness" in text:
                 brIndex = text.index("brightness")
-                if brIndex != (len(text) -1):
+                if brIndex != (len(text) - 1):
                     if text[brIndex + 1] == "up" or text[brIndex + 1] == "increase":
                         lampState['brightness'] = hsvInc(lampState['brightness'])
                     if text[brIndex + 1] == "down" or text[brIndex + 1] == "decrease":
@@ -118,34 +116,33 @@ def parseText(text):
                     if text[brIndex + 1] == "min":
                         lampState['brightness'] = 0.0
                     if text[brIndex + 1] == "random":
-                        lampState['brightness'] = float(random.uniform(0,1))
-
+                        lampState['brightness'] = float(random.uniform(0, 1))
 
             if "on" in text:
-                print("ON IS FOUND")
                 lampState['on'] = True
 
             if "off" in text:
-                print("OFF IS FOUND")
                 lampState['on'] = False
 
             lampState['client'] = MQTT_CLIENT_ID
-            print(lampState)
             c.publish(TOPIC_SET_LAMP_CONFIG,
-                  json.dumps(lampState).encode('utf-8'),
-                  qos=1)
+                      json.dumps(lampState).encode('utf-8'),
+                      qos=1)
             print("published")
             c.loop_stop()
+
 
 def hsvInc(prev):
     if prev + INTERVAL >= 1.0:
         return 1.0
     return prev + INTERVAL
 
+
 def hsvDec(prev):
     if prev - INTERVAL <= 0.0:
-        return 0.0 
+        return 0.0
     return prev - INTERVAL
+
 
 def recordCommand():
     r = sr.Recognizer()
@@ -159,7 +156,7 @@ def recordCommand():
         print("recognizing...")
         query = r.recognize_google(audio)
 
-        # setting language makes it slower but more accurate
+        # setting language makes it slower but more may be more accurate
         # query = r.recognize_google(audio, language = 'en-US')
         queryList = query.split()
         parseText(queryList)
@@ -168,10 +165,5 @@ def recordCommand():
     print(query)
 
 
-
-
-#parseText("hue random  25  saturation random  brightness random  decrease increase lamp reedd".split())
-
 while True:
     recordCommand()
-
